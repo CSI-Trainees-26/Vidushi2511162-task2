@@ -67,6 +67,8 @@ body {
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
+  text-decoration: none; /* nav items are <a> tags now (real page links, not JS buttons) */
+  display: block;
   transition: background 0.15s, color 0.15s;
 }
 .nav-item:hover { background: var(--bg); color: var(--text); }
@@ -133,6 +135,8 @@ body {
   cursor: pointer;
   font-weight: 600;
   transition: opacity 0.15s;
+  text-decoration: none; /* the "Open timer" / "View full summary" jump buttons are <a> tags now */
+  display: inline-block;
 }
 .btn-primary {
   background: var(--primary);
