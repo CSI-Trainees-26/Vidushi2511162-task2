@@ -1,13 +1,13 @@
 :root {
-  --bg: #EFF3EE;
-  --surface: #FFFFFF;
-  --border: #DCE3DD;
-  --text: #1F2A24;
-  --muted: #6B7A70;
-  --primary: #3F6B4F;
-  --primary-dark: #2F5540;
-  --accent: #E4633B;
-  --accent-soft: #FBE7E0;
+  --bg: #12141C;
+  --surface: #1C1F2A;
+  --border: #2A2E3A;
+  --text: #F2F4F0;
+  --muted: #8A8F9C;
+  --primary: #FF7A45;
+  --primary-dark: #E5622F;
+  --accent: #FF7A45;
+  --accent-soft: #3A2A20;
   --radius: 10px;
 }
 
@@ -70,7 +70,7 @@ body {
   transition: background 0.15s, color 0.15s;
 }
 .nav-item:hover { background: var(--bg); color: var(--text); }
-.nav-item.active { background: var(--primary); color: #fff; }
+.nav-item.active { background: var(--primary); color: #12141C; }
 
 .sidebar-footer {
   font-size: 0.78rem;
@@ -136,13 +136,13 @@ body {
 }
 .btn-primary {
   background: var(--primary);
-  color: #fff;
+  color: #12141C;
   padding: 10px 18px;
   font-size: 0.92rem;
 }
 .btn-small {
   background: var(--accent);
-  color: #fff;
+  color: #12141C;
   padding: 7px 12px;
   font-size: 0.82rem;
 }
@@ -241,7 +241,7 @@ input, select {
 .habit-category {
   font-size: 0.72rem;
   color: var(--primary);
-  background: #E7EFE9;
+  background: var(--accent-soft);
   padding: 2px 8px;
   border-radius: 20px;
   margin-left: 8px;
