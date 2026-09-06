@@ -46,7 +46,7 @@ let water       = loadJSON('ft_water', {});       // { "2026-09-06": 500 }
 let sleep       = loadJSON('ft_sleep', {});        // { "2026-09-06": 7.5 }
 let calories    = loadJSON('ft_calories', {});     // { "2026-09-06": 1800 }
 let savedQuotes = loadJSON('ft_savedQuotes', []);
-let pomoStats   = loadJSON('ft_pomoStats', { sessionsCompleted: 0, totalFocusMinutes: 0 });
+let pomoStats   = loadJSON('ft_pomoStats', { sessionsCompleted: 0, totalFocusMinutes: 0, sessionsByDate: {} });
 
 function persistAll() {
   saveJSON('ft_tasks', tasks);
@@ -60,30 +60,38 @@ function persistAll() {
 
 /* =========================================================
    NAVIGATION
-   A simple single-page app: only one .view has "active" at
-   a time. Sidebar buttons (and any "jump to X" button using
-   data-target) trigger the switch.
+   No longer needed as JS logic! Each page is now a real,
+   separate HTML file, so the browser itself handles
+   navigation via normal <a href="..."> links in the sidebar.
+   The "active" nav highlight is just a class written directly
+   into each page's HTML at build time.
    ========================================================= */
-function showView(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  const navBtn = document.querySelector(`.nav-item[data-target="${id}"]`);
-  if (navBtn) navBtn.classList.add('active');
-  renderAll(); // refresh data every time a view is opened, in case data changed elsewhere
+
+/* Small helper: only attach a listener if the element actually
+   exists on THIS page. Since script.js is now shared across 7
+   different pages, most pages only contain some of the elements
+   referenced below -- without this guard, the first missing
+   element would throw and stop the rest of the script running. */
+function on(id, event, handler) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener(event, handler);
+}
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+function setWidth(id, pct) {
+  const el = document.getElementById(id);
+  if (el) el.style.width = pct;
 }
 
-document.querySelectorAll('[data-target]').forEach(btn => {
-  btn.addEventListener('click', () => showView(btn.dataset.target));
-});
-
-/* Today's date, shown in sidebar + dashboard header */
+/* Today's date, shown in sidebar + page header on every page */
 function renderDates() {
   const niceDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
-  document.getElementById('todayDateMain').textContent = niceDate;
-  document.getElementById('todayDateSide').textContent = niceDate;
+  setText('todayDateMain', niceDate);
+  setText('todayDateSide', niceDate);
 }
 
 /* =========================================================
@@ -142,6 +150,8 @@ function renderTaskCard(task) {
 function renderTasks() {
   const pendingList = document.getElementById('pendingList');
   const completedList = document.getElementById('completedList');
+  if (!pendingList || !completedList) return; // this page doesn't include the task manager
+
   pendingList.innerHTML = '';
   completedList.innerHTML = '';
 
@@ -154,14 +164,15 @@ function renderTasks() {
   if (completed.length === 0) completedList.innerHTML = '<p class="empty-hint">Drag a task here when it\'s done.</p>';
   completed.forEach(t => completedList.appendChild(renderTaskCard(t)));
 
-  document.getElementById('pendingCount').textContent = pending.length;
-  document.getElementById('completedCount').textContent = completed.length;
+  setText('pendingCount', pending.length);
+  setText('completedCount', completed.length);
 }
 
 /* Drop zones: allow drop, highlight while dragging over, and
    flip the task's status to match the zone it lands on. */
 function setupDropZone(zoneId, status) {
   const zone = document.getElementById(zoneId);
+  if (!zone) return; // this page doesn't have this drop zone
   zone.addEventListener('dragover', e => {
     e.preventDefault();
     zone.classList.add('drag-over');
@@ -177,7 +188,7 @@ function setupDropZone(zoneId, status) {
 setupDropZone('pendingList', 'pending');
 setupDropZone('completedList', 'completed');
 
-document.getElementById('taskForm').addEventListener('submit', e => {
+on('taskForm', 'submit', e => {
   e.preventDefault();
   const input = document.getElementById('taskInput');
   if (input.value.trim()) {
@@ -227,6 +238,7 @@ function toggleHabitToday(id) {
 
 function renderHabits() {
   const list = document.getElementById('habitList');
+  if (!list) return; // this page doesn't include the habit tracker
   list.innerHTML = '';
   if (habits.length === 0) {
     list.innerHTML = '<p class="empty-hint">No habits yet. Add one above — e.g. "5km run" under Cardio.</p>';
@@ -273,7 +285,7 @@ function renderHabits() {
   });
 }
 
-document.getElementById('habitForm').addEventListener('submit', e => {
+on('habitForm', 'submit', e => {
   e.preventDefault();
   const nameInput = document.getElementById('habitInput');
   const catSelect = document.getElementById('habitCategory');
@@ -311,25 +323,31 @@ function renderWaterSleep() {
   const todayWater = water[t] || 0;
   const pct = Math.min(100, Math.round((todayWater / WATER_GOAL) * 100));
 
-  document.getElementById('waterBig').textContent = todayWater + ' ml';
-  document.getElementById('waterBarFull').style.width = pct + '%';
-  document.getElementById('dashWaterStat').textContent = todayWater + ' ml';
-  document.getElementById('dashWaterBar').style.width = pct + '%';
+  // water-sleep.html elements
+  setText('waterBig', todayWater + ' ml');
+  setWidth('waterBarFull', pct + '%');
+  // dashboard elements (different ids, same underlying data)
+  setText('dashWaterStat', todayWater + ' ml');
+  setWidth('dashWaterBar', pct + '%');
 
   const todaySleep = sleep[t];
-  document.getElementById('sleepBig').textContent = (todaySleep !== undefined ? todaySleep : '—') + ' hrs';
-  document.getElementById('dashSleepStat').textContent = (todaySleep !== undefined ? todaySleep : '—') + ' hrs';
+  const sleepLabel = (todaySleep !== undefined ? todaySleep : '—') + ' hrs';
+  setText('sleepBig', sleepLabel);
+  setText('dashSleepStat', sleepLabel);
 
-  document.getElementById('dashCalStat').textContent = (calories[t] || 0) + ' kcal';
+  setText('dashCalStat', (calories[t] || 0) + ' kcal');
 
   renderSleepChart('sleepChart');
   renderSleepChart('summarySleepChart');
 }
 
 /* Simple 7-day bar chart built from plain divs -- no chart
-   library needed for something this small. */
+   library needed for something this small. Guarded because it's
+   called for both water-sleep.html's chart AND summary.html's
+   chart, but a given page only ever has one of the two. */
 function renderSleepChart(containerId) {
   const container = document.getElementById(containerId);
+  if (!container) return;
   container.innerHTML = '';
   const days = lastNDates(7);
   const maxHours = Math.max(8, ...days.map(d => sleep[d] || 0));
@@ -347,23 +365,23 @@ function renderSleepChart(containerId) {
   });
 }
 
-document.getElementById('dashWaterAdd').addEventListener('click', () => addWater(250));
-document.getElementById('waterAddFull').addEventListener('click', () => addWater(250));
+on('dashWaterAdd', 'click', () => addWater(250));
+on('waterAddFull', 'click', () => addWater(250));
 
-document.getElementById('dashCalForm').addEventListener('submit', e => {
+on('dashCalForm', 'submit', e => {
   e.preventDefault();
   const input = document.getElementById('dashCalInput');
   const val = parseInt(input.value, 10);
   if (val > 0) { addCalories(val); input.value = ''; }
 });
 
-document.getElementById('dashSleepForm').addEventListener('submit', e => {
+on('dashSleepForm', 'submit', e => {
   e.preventDefault();
   const input = document.getElementById('dashSleepInput');
   const val = parseFloat(input.value);
   if (val >= 0) { logSleep(val); input.value = ''; }
 });
-document.getElementById('sleepFormFull').addEventListener('submit', e => {
+on('sleepFormFull', 'submit', e => {
   e.preventDefault();
   const input = document.getElementById('sleepInputFull');
   const val = parseFloat(input.value);
@@ -386,6 +404,7 @@ let pomoLinkedTaskId = '';
 
 function populatePomoTaskSelect() {
   const select = document.getElementById('pomoTaskSelect');
+  if (!select) return; // only exists on pomodoro.html
   const current = select.value;
   select.innerHTML = '<option value="">No task selected</option>';
   tasks.filter(t => t.status === 'pending').forEach(t => {
@@ -403,13 +422,22 @@ function formatTime(totalSeconds) {
   return `${m}:${s}`;
 }
 
+/* Updates the LIVE timer display on pomodoro.html only -- this can't
+   sync to other pages since each page is a separate load and the
+   countdown lives in memory, not localStorage. */
 function updatePomoDisplay() {
   const timeStr = formatTime(pomoSecondsLeft);
-  document.getElementById('pomoTimeBig').textContent = timeStr;
-  document.getElementById('pomoMode').textContent = pomoMode === 'focus' ? 'Focus session' : 'Break';
-  document.getElementById('dashPomoTime').textContent = timeStr;
-  const linkedTask = tasks.find(t => t.id === pomoLinkedTaskId);
-  document.getElementById('dashPomoTask').textContent = linkedTask ? linkedTask.title : 'No task selected';
+  setText('pomoTimeBig', timeStr);
+  setText('pomoMode', pomoMode === 'focus' ? 'Focus session' : 'Break');
+}
+
+/* Updates the dashboard's pomodoro widget with a persisted stat
+   (sessions completed today) instead of a live countdown, since the
+   dashboard is a different page load than the running timer. */
+function renderDashboardPomo() {
+  const today = todayStr();
+  const count = (pomoStats.sessionsByDate && pomoStats.sessionsByDate[today]) || 0;
+  setText('dashPomoSessions', `${count} session${count === 1 ? '' : 's'} today`);
 }
 
 function pomoTick() {
@@ -426,24 +454,32 @@ function pomoTick() {
 function handlePomoComplete() {
   const banner = document.getElementById('pomoBanner');
   if (pomoMode === 'focus') {
-    // Mark session complete + update stats
+    // Mark session complete + update stats (both lifetime and per-day)
     pomoStats.sessionsCompleted++;
     pomoStats.totalFocusMinutes += 25;
+    if (!pomoStats.sessionsByDate) pomoStats.sessionsByDate = {};
+    const today = todayStr();
+    pomoStats.sessionsByDate[today] = (pomoStats.sessionsByDate[today] || 0) + 1;
+
     const task = tasks.find(t => t.id === pomoLinkedTaskId);
     if (task) task.pomodoroSessions = (task.pomodoroSessions || 0) + 1;
     persistAll();
 
-    banner.textContent = task
-      ? `Session complete! "${task.title}" now has ${task.pomodoroSessions} focus session(s).`
-      : 'Focus session complete! Time for a break.';
-    banner.classList.remove('hidden');
+    if (banner) {
+      banner.textContent = task
+        ? `Session complete! "${task.title}" now has ${task.pomodoroSessions} focus session(s).`
+        : 'Focus session complete! Time for a break.';
+      banner.classList.remove('hidden');
+    }
     notifyUser('Pomodoro complete', 'Nice work — take a 5 minute break.');
 
     pomoMode = 'break';
     pomoSecondsLeft = BREAK_SECONDS;
   } else {
-    banner.textContent = 'Break over. Ready for another focus session?';
-    banner.classList.remove('hidden');
+    if (banner) {
+      banner.textContent = 'Break over. Ready for another focus session?';
+      banner.classList.remove('hidden');
+    }
     notifyUser('Break over', 'Ready to focus again?');
     pomoMode = 'focus';
     pomoSecondsLeft = FOCUS_SECONDS;
@@ -461,22 +497,24 @@ function notifyUser(title, body) {
   }
 }
 
-document.getElementById('pomoStart').addEventListener('click', () => {
+on('pomoStart', 'click', () => {
   if (pomoInterval) return; // already running
   pomoLinkedTaskId = document.getElementById('pomoTaskSelect').value;
-  document.getElementById('pomoBanner').classList.add('hidden');
+  const banner = document.getElementById('pomoBanner');
+  if (banner) banner.classList.add('hidden');
   pomoInterval = setInterval(pomoTick, 1000);
 });
-document.getElementById('pomoPause').addEventListener('click', () => {
+on('pomoPause', 'click', () => {
   clearInterval(pomoInterval);
   pomoInterval = null;
 });
-document.getElementById('pomoReset').addEventListener('click', () => {
+on('pomoReset', 'click', () => {
   clearInterval(pomoInterval);
   pomoInterval = null;
   pomoMode = 'focus';
   pomoSecondsLeft = FOCUS_SECONDS;
-  document.getElementById('pomoBanner').classList.add('hidden');
+  const banner = document.getElementById('pomoBanner');
+  if (banner) banner.classList.add('hidden');
   updatePomoDisplay();
 });
 
@@ -493,9 +531,16 @@ const FALLBACK_QUOTES = [
 
 let currentQuote = null;
 
+/* Only the dashboard has the "today's quote" widget -- skip the
+   network call entirely on other pages instead of fetching and then
+   discovering there's nowhere to display it. */
 async function fetchQuote() {
-  document.getElementById('dashQuoteText').textContent = 'Loading quote…';
-  document.getElementById('dashQuoteAuthor').textContent = '';
+  const textEl = document.getElementById('dashQuoteText');
+  const authorEl = document.getElementById('dashQuoteAuthor');
+  if (!textEl || !authorEl) return;
+
+  textEl.textContent = 'Loading quote…';
+  authorEl.textContent = '';
   try {
     const res = await fetch('https://api.quotable.io/random?tags=motivational|inspirational');
     if (!res.ok) throw new Error('bad response');
@@ -505,8 +550,8 @@ async function fetchQuote() {
     // API unreachable -- fall back to a local quote so the UI never breaks
     currentQuote = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
   }
-  document.getElementById('dashQuoteText').textContent = `"${currentQuote.text}"`;
-  document.getElementById('dashQuoteAuthor').textContent = currentQuote.author ? `— ${currentQuote.author}` : '';
+  textEl.textContent = `"${currentQuote.text}"`;
+  authorEl.textContent = currentQuote.author ? `— ${currentQuote.author}` : '';
 }
 
 function saveCurrentQuote() {
@@ -537,6 +582,7 @@ function editQuote(id) {
 
 function renderSavedQuotes() {
   const grid = document.getElementById('savedQuoteList');
+  if (!grid) return; // only exists on quotes.html
   grid.innerHTML = '';
   if (savedQuotes.length === 0) {
     grid.innerHTML = '<p class="empty-hint">No saved quotes yet.</p>';
@@ -558,9 +604,9 @@ function renderSavedQuotes() {
   });
 }
 
-document.getElementById('dashQuoteNew').addEventListener('click', fetchQuote);
-document.getElementById('dashQuoteSave').addEventListener('click', saveCurrentQuote);
-document.getElementById('quoteForm').addEventListener('submit', e => {
+on('dashQuoteNew', 'click', fetchQuote);
+on('dashQuoteSave', 'click', saveCurrentQuote);
+on('quoteForm', 'submit', e => {
   e.preventDefault();
   const textInput = document.getElementById('quoteTextInput');
   const authorInput = document.getElementById('quoteAuthorInput');
@@ -635,6 +681,7 @@ function renderSummary() {
 
 function setList(id, rows) {
   const el = document.getElementById(id);
+  if (!el) return;
   el.innerHTML = rows.map(([label, value]) => `<li><span>${label}</span><strong>${value}</strong></li>`).join('');
 }
 
@@ -645,20 +692,22 @@ function renderDashboardTop() {
   const todayTasks = tasks; // all currently pending+completed tasks counted for "today" simplicity
   const completed = todayTasks.filter(t => t.status === 'completed').length;
   const total = todayTasks.length;
-  document.getElementById('dashTaskStat').textContent = `${completed} / ${total}`;
-  document.getElementById('dashTaskBar').style.width = total ? `${(completed / total) * 100}%` : '0%';
+  setText('dashTaskStat', `${completed} / ${total}`);
+  setWidth('dashTaskBar', total ? `${(completed / total) * 100}%` : '0%');
 
   const t = todayStr();
   const habitsDoneToday = habits.filter(h => h.history[t]).length;
-  document.getElementById('dashHabitStat').textContent = `${habitsDoneToday} / ${habits.length}`;
-  document.getElementById('dashHabitBar').style.width = habits.length ? `${(habitsDoneToday / habits.length) * 100}%` : '0%';
+  setText('dashHabitStat', `${habitsDoneToday} / ${habits.length}`);
+  setWidth('dashHabitBar', habits.length ? `${(habitsDoneToday / habits.length) * 100}%` : '0%');
 }
 
 /* =========================================================
    MASTER RENDER
-   Called after every state change so every view always
-   reflects the latest data, no matter where the change
-   came from.
+   Called after every state change so whichever page is
+   currently open always reflects the latest data. Every
+   render function above guards itself, so calling all of them
+   on every page is safe -- each one is a no-op on pages that
+   don't have its elements.
    ========================================================= */
 function renderAll() {
   renderDates();
@@ -667,6 +716,7 @@ function renderAll() {
   renderWaterSleep();
   renderSummary();
   renderDashboardTop();
+  renderDashboardPomo();
   renderSavedQuotes();
   populatePomoTaskSelect();
   updatePomoDisplay();
