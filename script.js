@@ -479,3 +479,94 @@ document.getElementById('pomoReset').addEventListener('click', () => {
   document.getElementById('pomoBanner').classList.add('hidden');
   updatePomoDisplay();
 });
+
+/* =========================================================
+   DAILY QUOTE (public API) + SAVED QUOTES (CRUD)
+   ========================================================= */
+const FALLBACK_QUOTES = [
+  { text: 'The only bad workout is the one that didn\'t happen.', author: 'Unknown' },
+  { text: 'Small daily improvements lead to staggering long-term results.', author: 'Unknown' },
+  { text: 'Discipline is choosing between what you want now and what you want most.', author: 'Unknown' },
+  { text: 'Progress, not perfection.', author: 'Unknown' },
+  { text: 'Your body can stand almost anything. It\'s your mind you have to convince.', author: 'Unknown' }
+];
+
+let currentQuote = null;
+
+async function fetchQuote() {
+  document.getElementById('dashQuoteText').textContent = 'Loading quote…';
+  document.getElementById('dashQuoteAuthor').textContent = '';
+  try {
+    const res = await fetch('https://api.quotable.io/random?tags=motivational|inspirational');
+    if (!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    currentQuote = { text: data.content, author: data.author };
+  } catch (e) {
+    // API unreachable -- fall back to a local quote so the UI never breaks
+    currentQuote = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)];
+  }
+  document.getElementById('dashQuoteText').textContent = `"${currentQuote.text}"`;
+  document.getElementById('dashQuoteAuthor').textContent = currentQuote.author ? `— ${currentQuote.author}` : '';
+}
+
+function saveCurrentQuote() {
+  if (!currentQuote) return;
+  savedQuotes.push({ id: uid(), text: currentQuote.text, author: currentQuote.author || '' });
+  persistAll();
+  renderAll();
+}
+function addManualQuote(text, author) {
+  savedQuotes.push({ id: uid(), text, author });
+  persistAll();
+  renderAll();
+}
+function deleteQuote(id) {
+  savedQuotes = savedQuotes.filter(q => q.id !== id);
+  persistAll();
+  renderAll();
+}
+function editQuote(id) {
+  const q = savedQuotes.find(q => q.id === id);
+  const newText = prompt('Edit quote', q.text);
+  if (newText && newText.trim()) {
+    q.text = newText.trim();
+    persistAll();
+    renderAll();
+  }
+}
+
+function renderSavedQuotes() {
+  const grid = document.getElementById('savedQuoteList');
+  grid.innerHTML = '';
+  if (savedQuotes.length === 0) {
+    grid.innerHTML = '<p class="empty-hint">No saved quotes yet.</p>';
+    return;
+  }
+  savedQuotes.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'saved-quote-card';
+    card.innerHTML = `
+      <p class="q-text">"${escapeHTML(q.text)}"</p>
+      <p class="q-author">${q.author ? '— ' + escapeHTML(q.author) : ''}</p>
+      <span class="task-actions">
+        <button class="icon-btn" data-action="edit">✎</button>
+        <button class="icon-btn" data-action="delete">✕</button>
+      </span>`;
+    card.querySelector('[data-action="edit"]').addEventListener('click', () => editQuote(q.id));
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteQuote(q.id));
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById('dashQuoteNew').addEventListener('click', fetchQuote);
+document.getElementById('dashQuoteSave').addEventListener('click', saveCurrentQuote);
+document.getElementById('quoteForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const textInput = document.getElementById('quoteTextInput');
+  const authorInput = document.getElementById('quoteAuthorInput');
+  if (textInput.value.trim()) {
+    addManualQuote(textInput.value.trim(), authorInput.value.trim());
+    textInput.value = '';
+    authorInput.value = '';
+  }
+});
