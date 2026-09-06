@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Fitness & Habit Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-target="dashboard">Dashboard</button>
+      <button class="nav-item" data-target="tasks">Tasks</button>
+      <button class="nav-item" data-target="habits">Habits</button>
+      <button class="nav-item" data-target="water">Water & Sleep</button>
+      <button class="nav-item" data-target="pomodoro">Pomodoro</button>
+      <button class="nav-item" data-target="quotes">Quotes</button>
+      <button class="nav-item" data-target="summary">Weekly Summary</button>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===================== DASHBOARD ===================== -->
+    <section class="view active" id="dashboard">
+      <header class="view-header">
+        <div>
+          <h1>Good day</h1>
+          <p class="subdate" id="todayDateMain"></p>
+        </div>
+      </header>
+
+      <div class="grid dashboard-grid">
+
+        <div class="card stat-card">
+          <p class="stat-label">Tasks today</p>
+          <p class="stat-value" id="dashTaskStat">0 / 0</p>
+          <div class="bar"><div class="bar-fill" id="dashTaskBar"></div></div>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Habits today</p>
+          <p class="stat-value" id="dashHabitStat">0 / 0</p>
+          <div class="bar"><div class="bar-fill" id="dashHabitBar"></div></div>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Water intake</p>
+          <p class="stat-value" id="dashWaterStat">0 ml</p>
+          <div class="bar"><div class="bar-fill" id="dashWaterBar"></div></div>
+          <button class="btn-small" id="dashWaterAdd">+ 250ml</button>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Calories today</p>
+          <p class="stat-value" id="dashCalStat">0 kcal</p>
+          <form class="inline-form" id="dashCalForm">
+            <input type="number" min="1" placeholder="Add kcal" id="dashCalInput" required>
+            <button type="submit" class="btn-small">Add</button>
+          </form>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Sleep last night</p>
+          <p class="stat-value" id="dashSleepStat">— hrs</p>
+          <form class="inline-form" id="dashSleepForm">
+            <input type="number" min="0" max="24" step="0.5" placeholder="Hours" id="dashSleepInput" required>
+            <button type="submit" class="btn-small">Log</button>
+          </form>
+        </div>
+
+        <div class="card quote-card">
+          <p class="stat-label">Today's motivation</p>
+          <p class="quote-text" id="dashQuoteText">Loading quote…</p>
+          <p class="quote-author" id="dashQuoteAuthor"></p>
+          <div class="quote-actions">
+            <button class="btn-small" id="dashQuoteNew">New quote</button>
+            <button class="btn-small ghost" id="dashQuoteSave">Save</button>
+          </div>
+        </div>
+
+        <div class="card pomodoro-mini">
+          <p class="stat-label">Pomodoro</p>
+          <p class="pomo-time" id="dashPomoTime">25:00</p>
+          <p class="pomo-task" id="dashPomoTask">No task selected</p>
+          <button class="btn-small" data-target="pomodoro" data-goto="1">Open timer</button>
+        </div>
+
+        <div class="card summary-mini">
+          <p class="stat-label">This week</p>
+          <ul class="mini-list" id="dashWeekList"></ul>
+          <button class="btn-small ghost" data-target="summary" data-goto="1">View full summary</button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================== TASKS ===================== -->
+    <section class="view" id="tasks">
+      <header class="view-header">
+        <div>
+          <h1>Daily tasks</h1>
+          <p class="subdate">Temporary, day-to-day to-dos</p>
+        </div>
+      </header>
+
+      <form class="card add-form" id="taskForm">
+        <input type="text" id="taskInput" placeholder="Add a new task…" required>
+        <button type="submit" class="btn-primary">Add task</button>
+      </form>
+
+      <div class="grid two-col">
+        <div class="card column" id="pendingCol" data-status="pending">
+          <h3>Pending <span class="count" id="pendingCount">0</span></h3>
+          <div class="drop-zone" id="pendingList"></div>
+        </div>
+        <div class="card column" id="completedCol" data-status="completed">
+          <h3>Completed <span class="count" id="completedCount">0</span></h3>
+          <div class="drop-zone" id="completedList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HABITS ===================== -->
+    <section class="view" id="habits">
+      <header class="view-header">
+        <div>
+          <h1>Habits</h1>
+          <p class="subdate">Recurring activities you're building over time</p>
+        </div>
+      </header>
+
+      <form class="card add-form" id="habitForm">
+        <input type="text" id="habitInput" placeholder="Habit name (e.g. 1K steps)" required>
+        <select id="habitCategory">
+          <option>Workout</option>
+          <option>Fitness</option>
+          <option>Cardio</option>
+          <option>Mental Wellness</option>
+        </select>
+        <button type="submit" class="btn-primary">Add habit</button>
+      </form>
+
+      <div class="habit-list" id="habitList"></div>
+    </section>
+
+    <!-- ===================== WATER & SLEEP ===================== -->
+    <section class="view" id="water">
+      <header class="view-header">
+        <div>
+          <h1>Water & sleep</h1>
+          <p class="subdate">Two habits worth tracking on their own</p>
+        </div>
+      </header>
+
+      <div class="grid two-col">
+        <div class="card">
+          <h3>Water intake</h3>
+          <p class="big-stat" id="waterBig">0 ml</p>
+          <div class="bar"><div class="bar-fill" id="waterBarFull"></div></div>
+          <p class="hint">Goal: 2000ml a day</p>
+          <button class="btn-primary" id="waterAddFull">+ 250ml glass</button>
+        </div>
+        <div class="card">
+          <h3>Sleep</h3>
+          <p class="big-stat" id="sleepBig">— hrs</p>
+          <form class="inline-form" id="sleepFormFull">
+            <input type="number" min="0" max="24" step="0.5" placeholder="Hours slept" id="sleepInputFull" required>
+            <button type="submit" class="btn-primary">Log</button>
+          </form>
+          <h4>This week</h4>
+          <div class="chart-bars" id="sleepChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== POMODORO ===================== -->
+    <section class="view" id="pomodoro">
+      <header class="view-header">
+        <div>
+          <h1>Pomodoro timer</h1>
+          <p class="subdate">Focused work, linked to a task</p>
+        </div>
+      </header>
+
+      <div class="card pomo-card">
+        <select id="pomoTaskSelect">
+          <option value="">No task selected</option>
+        </select>
+        <p class="pomo-time-big" id="pomoTimeBig">25:00</p>
+        <p class="pomo-mode" id="pomoMode">Focus session</p>
+        <div class="pomo-controls">
+          <button class="btn-primary" id="pomoStart">Start</button>
+          <button class="btn-small" id="pomoPause">Pause</button>
+          <button class="btn-small ghost" id="pomoReset">Reset</button>
+        </div>
+        <div id="pomoBanner" class="pomo-banner hidden"></div>
+      </div>
+    </section>
+
+    <!-- ===================== QUOTES ===================== -->
+    <section class="view" id="quotes">
+      <header class="view-header">
+        <div>
+          <h1>Saved quotes</h1>
+          <p class="subdate">Motivation worth keeping</p>
+        </div>
+      </header>
+
+      <form class="card add-form" id="quoteForm">
+        <input type="text" id="quoteTextInput" placeholder="Quote text" required>
+        <input type="text" id="quoteAuthorInput" placeholder="Author (optional)">
+        <button type="submit" class="btn-primary">Save quote</button>
+      </form>
+
+      <div class="quote-grid" id="savedQuoteList"></div>
+    </section>
+
+    <!-- ===================== SUMMARY ===================== -->
+    <section class="view" id="summary">
+      <header class="view-header">
+        <div>
+          <h1>Weekly summary</h1>
+          <p class="subdate">Last 7 days at a glance</p>
+        </div>
+      </header>
+
+      <div class="grid three-col">
+        <div class="card">
+          <h3>Tasks</h3>
+          <ul class="summary-list" id="summaryTasks"></ul>
+        </div>
+        <div class="card">
+          <h3>Habits</h3>
+          <ul class="summary-list" id="summaryHabits"></ul>
+        </div>
+        <div class="card">
+          <h3>Fitness</h3>
+          <ul class="summary-list" id="summaryFitness"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Sleep this week</h3>
+        <div class="chart-bars" id="summarySleepChart"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
