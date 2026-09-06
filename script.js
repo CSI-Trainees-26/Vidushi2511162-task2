@@ -570,3 +570,110 @@ document.getElementById('quoteForm').addEventListener('submit', e => {
     authorInput.value = '';
   }
 });
+
+/* =========================================================
+   WEEKLY SUMMARY
+   Pure read-only aggregation over the last 7 days of data.
+   ========================================================= */
+function renderSummary() {
+  const week = lastNDates(7);
+
+  // ---- Tasks ----
+  const weekTasks = tasks.filter(t => week.includes(t.createdAt));
+  const completedTasks = weekTasks.filter(t => t.status === 'completed');
+  const pendingTasks = weekTasks.filter(t => t.status === 'pending');
+  const completionPct = weekTasks.length ? Math.round((completedTasks.length / weekTasks.length) * 100) : 0;
+
+  setList('summaryTasks', [
+    ['Added this week', weekTasks.length],
+    ['Completed', completedTasks.length],
+    ['Pending', pendingTasks.length],
+    ['Completion rate', completionPct + '%']
+  ]);
+
+  // ---- Habits ----
+  const habitCompletionsThisWeek = habits.reduce((sum, h) => sum + week.filter(d => h.history[d]).length, 0);
+  const categoryCounts = {};
+  habits.forEach(h => {
+    const doneCount = week.filter(d => h.history[d]).length;
+    categoryCounts[h.category] = (categoryCounts[h.category] || 0) + doneCount;
+  });
+  const categoryLines = Object.keys(categoryCounts).map(cat => [cat, categoryCounts[cat]]);
+
+  setList('summaryHabits', [
+    ['Habits created', habits.length],
+    ['Completions this week', habitCompletionsThisWeek],
+    ...categoryLines
+  ]);
+
+  // ---- Fitness (water, calories) ----
+  const weekWater = week.map(d => water[d] || 0);
+  const totalWater = weekWater.reduce((a, b) => a + b, 0);
+  const avgWater = Math.round(totalWater / 7);
+  const totalCalories = week.reduce((sum, d) => sum + (calories[d] || 0), 0);
+
+  const weekSleep = week.map(d => sleep[d]).filter(v => v !== undefined);
+  const totalSleep = weekSleep.reduce((a, b) => a + b, 0);
+  const avgSleep = weekSleep.length ? (totalSleep / weekSleep.length).toFixed(1) : 0;
+
+  setList('summaryFitness', [
+    ['Total water', totalWater + ' ml'],
+    ['Average water/day', avgWater + ' ml'],
+    ['Total calories', totalCalories + ' kcal'],
+    ['Total sleep', totalSleep + ' hrs'],
+    ['Average sleep/day', avgSleep + ' hrs']
+  ]);
+
+  // Mini dashboard version
+  setList('dashWeekList', [
+    ['Tasks completed', completedTasks.length],
+    ['Habit completions', habitCompletionsThisWeek],
+    ['Avg sleep', avgSleep + ' hrs'],
+    ['Water total', totalWater + ' ml']
+  ]);
+}
+
+function setList(id, rows) {
+  const el = document.getElementById(id);
+  el.innerHTML = rows.map(([label, value]) => `<li><span>${label}</span><strong>${value}</strong></li>`).join('');
+}
+
+/* =========================================================
+   DASHBOARD TOP STATS (tasks / habits progress bars)
+   ========================================================= */
+function renderDashboardTop() {
+  const todayTasks = tasks; // all currently pending+completed tasks counted for "today" simplicity
+  const completed = todayTasks.filter(t => t.status === 'completed').length;
+  const total = todayTasks.length;
+  document.getElementById('dashTaskStat').textContent = `${completed} / ${total}`;
+  document.getElementById('dashTaskBar').style.width = total ? `${(completed / total) * 100}%` : '0%';
+
+  const t = todayStr();
+  const habitsDoneToday = habits.filter(h => h.history[t]).length;
+  document.getElementById('dashHabitStat').textContent = `${habitsDoneToday} / ${habits.length}`;
+  document.getElementById('dashHabitBar').style.width = habits.length ? `${(habitsDoneToday / habits.length) * 100}%` : '0%';
+}
+
+/* =========================================================
+   MASTER RENDER
+   Called after every state change so every view always
+   reflects the latest data, no matter where the change
+   came from.
+   ========================================================= */
+function renderAll() {
+  renderDates();
+  renderTasks();
+  renderHabits();
+  renderWaterSleep();
+  renderSummary();
+  renderDashboardTop();
+  renderSavedQuotes();
+  populatePomoTaskSelect();
+  updatePomoDisplay();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderAll();
+fetchQuote();
