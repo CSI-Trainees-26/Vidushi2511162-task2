@@ -191,3 +191,94 @@ function escapeHTML(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+/* =========================================================
+   HABIT TRACKER
+   A habit stores its own "history" map of date -> true, so
+   we can both mark today's completion AND draw a graph of
+   past days without a separate data structure.
+   ========================================================= */
+function addHabit(name, category) {
+  habits.push({ id: uid(), name, category, history: {} });
+  persistAll();
+  renderAll();
+}
+function deleteHabit(id) {
+  habits = habits.filter(h => h.id !== id);
+  persistAll();
+  renderAll();
+}
+function editHabit(id) {
+  const habit = habits.find(h => h.id === id);
+  const newName = prompt('Edit habit name', habit.name);
+  if (newName && newName.trim()) {
+    habit.name = newName.trim();
+    persistAll();
+    renderAll();
+  }
+}
+function toggleHabitToday(id) {
+  const habit = habits.find(h => h.id === id);
+  const t = todayStr();
+  habit.history[t] = !habit.history[t];
+  persistAll();
+  renderAll();
+}
+
+function renderHabits() {
+  const list = document.getElementById('habitList');
+  list.innerHTML = '';
+  if (habits.length === 0) {
+    list.innerHTML = '<p class="empty-hint">No habits yet. Add one above — e.g. "5km run" under Cardio.</p>';
+    return;
+  }
+  const days = lastNDates(28); // 4 weeks of squares
+  const today = todayStr();
+
+  habits.forEach(habit => {
+    const card = document.createElement('div');
+    card.className = 'habit-card';
+
+    const doneToday = !!habit.history[today];
+    card.innerHTML = `
+      <div class="habit-top">
+        <div>
+          <span class="habit-name">${escapeHTML(habit.name)}</span>
+          <span class="habit-category">${habit.category}</span>
+        </div>
+        <span class="task-actions">
+          <button class="icon-btn" data-action="edit">✎</button>
+          <button class="icon-btn" data-action="delete">✕</button>
+        </span>
+      </div>
+      <div class="habit-graph"></div>
+      <button class="btn-small ${doneToday ? 'ghost' : ''}" data-action="toggle">
+        ${doneToday ? 'Marked done today ✓' : 'Mark done today'}
+      </button>
+    `;
+
+    const graph = card.querySelector('.habit-graph');
+    days.forEach(day => {
+      const sq = document.createElement('div');
+      sq.className = 'habit-square' + (habit.history[day] ? ' done' : '') + (day === today ? ' today' : '');
+      sq.title = day;
+      graph.appendChild(sq);
+    });
+
+    card.querySelector('[data-action="edit"]').addEventListener('click', () => editHabit(habit.id));
+    card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteHabit(habit.id));
+    card.querySelector('[data-action="toggle"]').addEventListener('click', () => toggleHabitToday(habit.id));
+
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('habitForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const nameInput = document.getElementById('habitInput');
+  const catSelect = document.getElementById('habitCategory');
+  if (nameInput.value.trim()) {
+    addHabit(nameInput.value.trim(), catSelect.value);
+    nameInput.value = '';
+  }
+});
