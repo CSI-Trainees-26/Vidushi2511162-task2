@@ -282,3 +282,90 @@ document.getElementById('habitForm').addEventListener('submit', e => {
     nameInput.value = '';
   }
 });
+
+/* =========================================================
+   WATER, SLEEP, CALORIES
+   ========================================================= */
+const WATER_GOAL = 2000; // ml
+
+function addWater(ml) {
+  const t = todayStr();
+  water[t] = (water[t] || 0) + ml;
+  persistAll();
+  renderAll();
+}
+function logSleep(hours) {
+  sleep[todayStr()] = hours;
+  persistAll();
+  renderAll();
+}
+function addCalories(kcal) {
+  const t = todayStr();
+  calories[t] = (calories[t] || 0) + kcal;
+  persistAll();
+  renderAll();
+}
+
+function renderWaterSleep() {
+  const t = todayStr();
+  const todayWater = water[t] || 0;
+  const pct = Math.min(100, Math.round((todayWater / WATER_GOAL) * 100));
+
+  document.getElementById('waterBig').textContent = todayWater + ' ml';
+  document.getElementById('waterBarFull').style.width = pct + '%';
+  document.getElementById('dashWaterStat').textContent = todayWater + ' ml';
+  document.getElementById('dashWaterBar').style.width = pct + '%';
+
+  const todaySleep = sleep[t];
+  document.getElementById('sleepBig').textContent = (todaySleep !== undefined ? todaySleep : '—') + ' hrs';
+  document.getElementById('dashSleepStat').textContent = (todaySleep !== undefined ? todaySleep : '—') + ' hrs';
+
+  document.getElementById('dashCalStat').textContent = (calories[t] || 0) + ' kcal';
+
+  renderSleepChart('sleepChart');
+  renderSleepChart('summarySleepChart');
+}
+
+/* Simple 7-day bar chart built from plain divs -- no chart
+   library needed for something this small. */
+function renderSleepChart(containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const days = lastNDates(7);
+  const maxHours = Math.max(8, ...days.map(d => sleep[d] || 0));
+
+  days.forEach(day => {
+    const hrs = sleep[day] || 0;
+    const col = document.createElement('div');
+    col.className = 'chart-col';
+    const barHeight = Math.round((hrs / maxHours) * 100);
+    col.innerHTML = `
+      <div class="chart-bar" style="height:${barHeight}%" title="${hrs}h"></div>
+      <span class="chart-label">${formatDayLabel(day)}</span>
+    `;
+    container.appendChild(col);
+  });
+}
+
+document.getElementById('dashWaterAdd').addEventListener('click', () => addWater(250));
+document.getElementById('waterAddFull').addEventListener('click', () => addWater(250));
+
+document.getElementById('dashCalForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('dashCalInput');
+  const val = parseInt(input.value, 10);
+  if (val > 0) { addCalories(val); input.value = ''; }
+});
+
+document.getElementById('dashSleepForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('dashSleepInput');
+  const val = parseFloat(input.value);
+  if (val >= 0) { logSleep(val); input.value = ''; }
+});
+document.getElementById('sleepFormFull').addEventListener('submit', e => {
+  e.preventDefault();
+  const input = document.getElementById('sleepInputFull');
+  const val = parseFloat(input.value);
+  if (val >= 0) { logSleep(val); input.value = ''; }
+});
