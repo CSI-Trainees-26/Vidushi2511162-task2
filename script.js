@@ -369,3 +369,113 @@ document.getElementById('sleepFormFull').addEventListener('submit', e => {
   const val = parseFloat(input.value);
   if (val >= 0) { logSleep(val); input.value = ''; }
 });
+
+/* =========================================================
+   POMODORO TIMER
+   Simple countdown using setInterval. Work session = 25 min,
+   break = 5 min. When a WORK session hits 0:00, we mark it
+   complete against the linked task and notify the user.
+   ========================================================= */
+const FOCUS_SECONDS = 25 * 60;
+const BREAK_SECONDS = 5 * 60;
+
+let pomoSecondsLeft = FOCUS_SECONDS;
+let pomoInterval = null;
+let pomoMode = 'focus'; // 'focus' | 'break'
+let pomoLinkedTaskId = '';
+
+function populatePomoTaskSelect() {
+  const select = document.getElementById('pomoTaskSelect');
+  const current = select.value;
+  select.innerHTML = '<option value="">No task selected</option>';
+  tasks.filter(t => t.status === 'pending').forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.title;
+    select.appendChild(opt);
+  });
+  select.value = current || '';
+}
+
+function formatTime(totalSeconds) {
+  const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+  const s = (totalSeconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function updatePomoDisplay() {
+  const timeStr = formatTime(pomoSecondsLeft);
+  document.getElementById('pomoTimeBig').textContent = timeStr;
+  document.getElementById('pomoMode').textContent = pomoMode === 'focus' ? 'Focus session' : 'Break';
+  document.getElementById('dashPomoTime').textContent = timeStr;
+  const linkedTask = tasks.find(t => t.id === pomoLinkedTaskId);
+  document.getElementById('dashPomoTask').textContent = linkedTask ? linkedTask.title : 'No task selected';
+}
+
+function pomoTick() {
+  pomoSecondsLeft--;
+  if (pomoSecondsLeft <= 0) {
+    clearInterval(pomoInterval);
+    pomoInterval = null;
+    handlePomoComplete();
+    return;
+  }
+  updatePomoDisplay();
+}
+
+function handlePomoComplete() {
+  const banner = document.getElementById('pomoBanner');
+  if (pomoMode === 'focus') {
+    // Mark session complete + update stats
+    pomoStats.sessionsCompleted++;
+    pomoStats.totalFocusMinutes += 25;
+    const task = tasks.find(t => t.id === pomoLinkedTaskId);
+    if (task) task.pomodoroSessions = (task.pomodoroSessions || 0) + 1;
+    persistAll();
+
+    banner.textContent = task
+      ? `Session complete! "${task.title}" now has ${task.pomodoroSessions} focus session(s).`
+      : 'Focus session complete! Time for a break.';
+    banner.classList.remove('hidden');
+    notifyUser('Pomodoro complete', 'Nice work — take a 5 minute break.');
+
+    pomoMode = 'break';
+    pomoSecondsLeft = BREAK_SECONDS;
+  } else {
+    banner.textContent = 'Break over. Ready for another focus session?';
+    banner.classList.remove('hidden');
+    notifyUser('Break over', 'Ready to focus again?');
+    pomoMode = 'focus';
+    pomoSecondsLeft = FOCUS_SECONDS;
+  }
+  updatePomoDisplay();
+  renderAll();
+}
+
+function notifyUser(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body });
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission();
+  }
+}
+
+document.getElementById('pomoStart').addEventListener('click', () => {
+  if (pomoInterval) return; // already running
+  pomoLinkedTaskId = document.getElementById('pomoTaskSelect').value;
+  document.getElementById('pomoBanner').classList.add('hidden');
+  pomoInterval = setInterval(pomoTick, 1000);
+});
+document.getElementById('pomoPause').addEventListener('click', () => {
+  clearInterval(pomoInterval);
+  pomoInterval = null;
+});
+document.getElementById('pomoReset').addEventListener('click', () => {
+  clearInterval(pomoInterval);
+  pomoInterval = null;
+  pomoMode = 'focus';
+  pomoSecondsLeft = FOCUS_SECONDS;
+  document.getElementById('pomoBanner').classList.add('hidden');
+  updatePomoDisplay();
+});
