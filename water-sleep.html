@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Water & Sleep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR (same on every page — this IS the multi-page nav now) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-item">Dashboard</a>
+      <a href="tasks.html" class="nav-item">Tasks</a>
+      <a href="habits.html" class="nav-item">Habits</a>
+      <a href="water-sleep.html" class="nav-item active">Water & Sleep</a>
+      <a href="pomodoro.html" class="nav-item">Pomodoro</a>
+      <a href="quotes.html" class="nav-item">Quotes</a>
+      <a href="summary.html" class="nav-item">Weekly Summary</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN: only this page's section, always visible, nothing else loaded -->
+  <main class="main">
+    <section class="view active" id="water">
+      <header class="view-header">
+        <div>
+          <h1>Water & sleep</h1>
+          <p class="subdate">Two habits worth tracking on their own</p>
+        </div>
+      </header>
+
+      <div class="grid two-col">
+        <div class="card">
+          <h3>Water intake</h3>
+          <p class="big-stat" id="waterBig">0 ml</p>
+          <div class="bar"><div class="bar-fill" id="waterBarFull"></div></div>
+          <p class="hint">Goal: 2000ml a day</p>
+          <button class="btn-primary" id="waterAddFull">+ 250ml glass</button>
+        </div>
+        <div class="card">
+          <h3>Sleep</h3>
+          <p class="big-stat" id="sleepBig">— hrs</p>
+          <form class="inline-form" id="sleepFormFull">
+            <input type="number" min="0" max="24" step="0.5" placeholder="Hours slept" id="sleepInputFull" required>
+            <button type="submit" class="btn-primary">Log</button>
+          </form>
+          <h4>This week</h4>
+          <div class="chart-bars" id="sleepChart"></div>
+        </div>
+      </div>
+    
+    </section>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

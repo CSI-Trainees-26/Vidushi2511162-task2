@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Pomodoro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR (same on every page — this IS the multi-page nav now) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-item">Dashboard</a>
+      <a href="tasks.html" class="nav-item">Tasks</a>
+      <a href="habits.html" class="nav-item">Habits</a>
+      <a href="water-sleep.html" class="nav-item">Water & Sleep</a>
+      <a href="pomodoro.html" class="nav-item active">Pomodoro</a>
+      <a href="quotes.html" class="nav-item">Quotes</a>
+      <a href="summary.html" class="nav-item">Weekly Summary</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN: only this page's section, always visible, nothing else loaded -->
+  <main class="main">
+    <section class="view active" id="pomodoro">
+      <header class="view-header">
+        <div>
+          <h1>Pomodoro timer</h1>
+          <p class="subdate">Focused work, linked to a task</p>
+        </div>
+      </header>
+
+      <div class="card pomo-card">
+        <select id="pomoTaskSelect">
+          <option value="">No task selected</option>
+        </select>
+        <p class="pomo-time-big" id="pomoTimeBig">25:00</p>
+        <p class="pomo-mode" id="pomoMode">Focus session</p>
+        <div class="pomo-controls">
+          <button class="btn-primary" id="pomoStart">Start</button>
+          <button class="btn-small" id="pomoPause">Pause</button>
+          <button class="btn-small ghost" id="pomoReset">Reset</button>
+        </div>
+        <div id="pomoBanner" class="pomo-banner hidden"></div>
+      </div>
+    
+    </section>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
