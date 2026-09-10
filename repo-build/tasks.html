@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Tasks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR (same on every page — this IS the multi-page nav now) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-item">Dashboard</a>
+      <a href="tasks.html" class="nav-item active">Tasks</a>
+      <a href="habits.html" class="nav-item">Habits</a>
+      <a href="water-sleep.html" class="nav-item">Water & Sleep</a>
+      <a href="pomodoro.html" class="nav-item">Pomodoro</a>
+      <a href="quotes.html" class="nav-item">Quotes</a>
+      <a href="summary.html" class="nav-item">Weekly Summary</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN: only this page's section, always visible, nothing else loaded -->
+  <main class="main">
+    <section class="view active" id="tasks">
+      <header class="view-header">
+        <div>
+          <h1>Daily tasks</h1>
+          <p class="subdate">Temporary, day-to-day to-dos</p>
+        </div>
+      </header>
+
+      <form class="card add-form" id="taskForm">
+        <input type="text" id="taskInput" placeholder="Add a new task…" required>
+        <button type="submit" class="btn-primary">Add task</button>
+      </form>
+
+      <div class="grid two-col">
+        <div class="card column" id="pendingCol" data-status="pending">
+          <h3>Pending <span class="count" id="pendingCount">0</span></h3>
+          <div class="drop-zone" id="pendingList"></div>
+        </div>
+        <div class="card column" id="completedCol" data-status="completed">
+          <h3>Completed <span class="count" id="completedCount">0</span></h3>
+          <div class="drop-zone" id="completedList"></div>
+        </div>
+      </div>
+    
+    </section>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

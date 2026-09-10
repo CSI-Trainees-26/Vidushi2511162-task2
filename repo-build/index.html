@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR (same on every page — this IS the multi-page nav now) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-item active">Dashboard</a>
+      <a href="tasks.html" class="nav-item">Tasks</a>
+      <a href="habits.html" class="nav-item">Habits</a>
+      <a href="water-sleep.html" class="nav-item">Water & Sleep</a>
+      <a href="pomodoro.html" class="nav-item">Pomodoro</a>
+      <a href="quotes.html" class="nav-item">Quotes</a>
+      <a href="summary.html" class="nav-item">Weekly Summary</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN: only this page's section, always visible, nothing else loaded -->
+  <main class="main">
+    <section class="view active" id="dashboard">
+
+      <!-- HERO -->
+      <div class="hero card">
+        <div class="hero-text">
+          <p class="hero-eyebrow" id="todayDateMain"></p>
+          <h1 class="hero-title">DISCIPLINE TODAY,<br><span class="accent-text">PROGRESS</span> TOMORROW</h1>
+          <p class="hero-sub">Small consistent reps beat occasional heroics. Show up today.</p>
+        </div>
+        <svg class="hero-illustration" viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="0" y="0" width="320" height="220" fill="none"/>
+          <g opacity="0.9">
+            <rect x="20" y="120" width="22" height="90" fill="var(--border)"/>
+            <rect x="50" y="90" width="18" height="120" fill="var(--border)"/>
+            <rect x="76" y="140" width="24" height="70" fill="var(--border)"/>
+            <rect x="108" y="60" width="20" height="150" fill="var(--border)"/>
+            <rect x="136" y="100" width="16" height="110" fill="var(--border)"/>
+            <rect x="160" y="40" width="26" height="170" fill="var(--border)"/>
+            <rect x="194" y="80" width="18" height="130" fill="var(--border)"/>
+            <rect x="220" y="130" width="22" height="80" fill="var(--border)"/>
+            <rect x="250" y="70" width="20" height="140" fill="var(--border)"/>
+            <rect x="278" y="110" width="18" height="100" fill="var(--border)"/>
+          </g>
+          <g>
+            <circle cx="160" cy="100" r="60" fill="var(--accent)" opacity="0.08"/>
+            <circle cx="160" cy="72" r="14" fill="var(--accent)" opacity="0.9"/>
+            <path d="M160 88 C140 90 132 110 136 140 L150 140 L154 210 L166 210 L170 140 L184 140 C188 110 180 90 160 88 Z" fill="var(--accent)" opacity="0.9"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- OVERALL PROGRESS + STREAKS -->
+      <div class="grid progress-row">
+        <div class="card progress-card">
+          <div class="progress-head">
+            <span class="progress-title">↗ OVERALL PROGRESS</span>
+            <span class="progress-delta" id="progressDelta">+0% vs last week</span>
+          </div>
+          <svg class="progress-svg" id="progressSvg" viewBox="0 0 560 180" preserveAspectRatio="none"></svg>
+          <div class="progress-labels">
+            <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+          </div>
+        </div>
+        <div class="streak-stack">
+          <div class="card streak-card">
+            <p class="stat-label">CURRENT STREAK</p>
+            <div class="streak-row">
+              <span class="streak-num" id="currentStreak">0</span>
+              <span class="streak-unit">DAYS</span>
+              <span class="streak-icon">🔥</span>
+            </div>
+          </div>
+          <div class="card streak-card">
+            <p class="stat-label">LONGEST STREAK</p>
+            <div class="streak-row">
+              <span class="streak-icon small">🏆</span>
+              <span class="streak-num small" id="longestStreak">0</span>
+              <span class="streak-unit">DAYS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODULES: one ring per habit category -->
+      <h3 class="section-title">MODULES</h3>
+      <div class="grid modules-grid" id="modulesGrid">
+        <p class="empty-hint">Add habits under a category (Workout, Fitness, Cardio, Mental Wellness) to see your modules here.</p>
+      </div>
+
+      <!-- QUICK LOG: the required dashboard widgets -->
+      <h3 class="section-title">QUICK LOG</h3>
+      <div class="grid dashboard-grid">
+
+        <div class="card stat-card">
+          <p class="stat-label">Water intake</p>
+          <p class="stat-value" id="dashWaterStat">0 ml</p>
+          <div class="bar"><div class="bar-fill" id="dashWaterBar"></div></div>
+          <button class="btn-small" id="dashWaterAdd">+ 250ml</button>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Calories today</p>
+          <p class="stat-value" id="dashCalStat">0 kcal</p>
+          <form class="inline-form" id="dashCalForm">
+            <input type="number" min="1" placeholder="Add kcal" id="dashCalInput" required>
+            <button type="submit" class="btn-small">Add</button>
+          </form>
+        </div>
+
+        <div class="card stat-card">
+          <p class="stat-label">Sleep last night</p>
+          <p class="stat-value" id="dashSleepStat">— hrs</p>
+          <form class="inline-form" id="dashSleepForm">
+            <input type="number" min="0" max="24" step="0.5" placeholder="Hours" id="dashSleepInput" required>
+            <button type="submit" class="btn-small">Log</button>
+          </form>
+        </div>
+
+        <div class="card quote-card">
+          <p class="stat-label">Today's motivation</p>
+          <p class="quote-text" id="dashQuoteText">Loading quote…</p>
+          <p class="quote-author" id="dashQuoteAuthor"></p>
+          <div class="quote-actions">
+            <button class="btn-small" id="dashQuoteNew">New quote</button>
+            <button class="btn-small ghost" id="dashQuoteSave">Save</button>
+          </div>
+        </div>
+
+        <div class="card pomodoro-mini">
+          <p class="stat-label">Pomodoro</p>
+          <p class="stat-value" id="dashPomoSessions">0 sessions today</p>
+          <p class="pomo-task">Stay on the timer page while it runs</p>
+          <a href="pomodoro.html" class="btn-small">Open timer</a>
+        </div>
+
+        <div class="card summary-mini">
+          <p class="stat-label">This week</p>
+          <ul class="mini-list" id="dashWeekList"></ul>
+          <a href="summary.html" class="btn-small ghost">View full summary</a>
+        </div>
+
+      </div>
+    
+    </section>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

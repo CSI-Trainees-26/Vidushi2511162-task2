@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pace — Quotes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR (same on every page — this IS the multi-page nav now) -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">●</span>
+      <span class="brand-name">Pace</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html" class="nav-item">Dashboard</a>
+      <a href="tasks.html" class="nav-item">Tasks</a>
+      <a href="habits.html" class="nav-item">Habits</a>
+      <a href="water-sleep.html" class="nav-item">Water & Sleep</a>
+      <a href="pomodoro.html" class="nav-item">Pomodoro</a>
+      <a href="quotes.html" class="nav-item active">Quotes</a>
+      <a href="summary.html" class="nav-item">Weekly Summary</a>
+    </nav>
+    <div class="sidebar-footer">
+      <span id="todayDateSide"></span>
+    </div>
+  </aside>
+
+  <!-- MAIN: only this page's section, always visible, nothing else loaded -->
+  <main class="main">
+    <section class="view active" id="quotes">
+      <header class="view-header">
+        <div>
+          <h1>Saved quotes</h1>
+          <p class="subdate">Motivation worth keeping</p>
+        </div>
+      </header>
+
+      <form class="card add-form" id="quoteForm">
+        <input type="text" id="quoteTextInput" placeholder="Quote text" required>
+        <input type="text" id="quoteAuthorInput" placeholder="Author (optional)">
+        <button type="submit" class="btn-primary">Save quote</button>
+      </form>
+
+      <div class="quote-grid" id="savedQuoteList"></div>
+    
+    </section>
+  </main>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
